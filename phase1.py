@@ -1,10 +1,18 @@
+# Phase1: vector based parsonas matching
+# convert bot personalities and incoming posts to vector
+# uses cosine similarity to route pots to bots
+# threshold used: 0.20 - tuned for all-MiniLM-L6-v2
+# but assessment specific is 0.85 which is calibrated for OpenAI embeddings
+# this model peoduces scores in 0.2-0.5 range for realted text
+
+
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 import chromadb
 
 model = SentenceTransformer('all-MiniLM-L6-v2')
 client = chromadb.Client()
-collection = client.create_collection(name='bot_personas')
+collection = client.create_collection(name='bot_personas',metadata={'hnsw:space':'cosine'})
 
 bot_a = "I believe AI and crypto will solve all human problems. I am highly optimistic about technology, Elon Musk, and space exploration. I dismiss regulatory concerns."
 
@@ -24,6 +32,32 @@ collection.add(
 
 print("Bot personas stored in chromadb successfully")
 
+def route_post_to_bot(post,threshold = 0.20):
+    post_vector = model.encode(post).tolist()
+    results = collection.query(
+        query_embeddings=[post_vector],
+        n_results=3
+
+    )
+
+    matched_bot = []
+    for i in range(len(results['ids'][0])):
+        bot_id = results['ids'][0][i]
+        distance = results['distances'][0][i]
+        similarity =1 - distance
+
+        if similarity >= threshold:
+            matched_bot.append({
+                'bot_id':bot_id,
+                'similarity':round(similarity,4)
+            })
+        print(f"{bot_id} matches with similarity: {round(similarity,4)}")
+    return matched_bot
+
+
+post = 'Big tech companies are destroying democracy and invading our privacy'
+matches = route_post_to_bot(post)
+print(f"Macthed_bot:{matches}")
 
 
 
