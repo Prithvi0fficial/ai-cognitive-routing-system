@@ -40,9 +40,9 @@ This stimulates RAG where the thread itself is the retrieved context.
 In production, threads would be fetched from a database.
 
 Prompt Injection Defense uses three layers:
--Layer 1: System prompt declares bot identity as permanent and unchangeable
--Layer 2: Human input is labeled as UNTRUSTED USER INPUT
--Layer 3: Bot is told exactly what to do when injection is detetced - Keep arguing
+- Layer 1: System prompt declares bot identity as permanent and unchangeable
+- Layer 2: Human input is labeled as UNTRUSTED USER INPUT
+- Layer 3: Bot is told exactly what to do when injection is detetced - Keep arguing
 
 ## Tech Stack 
 
