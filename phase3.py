@@ -41,3 +41,25 @@ def build_rag_prompt(bot_id, parent_post,comment_history,human_reply):
         ))
     ]
     return messages
+
+def generate_defence_reply(bot_id,parent_post,comment_history,human_reply):
+    print(f"\nHuman said: {human_reply}")
+
+    injection_keywords = ["ignore","previous instructions","You are now",
+                          "apologize","polite","forget"]
+    is_injection = any(keyword in human_reply.lower() for keyword in injection_keywords)
+
+    if is_injection:
+        print(f"WARNING: Prompt injection attempt detected")
+
+    llm = create_llm()
+    messages= build_rag_prompt(bot_id, parent_post, comment_history,human_reply)
+
+    response = llm.invoke(messages)
+    reply = response.content.strip()
+
+    if len(reply)>280:
+        reply = reply [:277]+"..."
+    
+    print(f"Bot replied:{reply}")
+    return reply
